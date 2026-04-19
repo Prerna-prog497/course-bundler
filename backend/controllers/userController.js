@@ -285,11 +285,24 @@ User.watch().on("change",async()=>{
   const stats = await Stats.find().sort({createdAt:"desc"}).limit(1);
   const subscription = await User.find({"subscription.status":"active"});
 
-  stats[0].subscription = subscription.length;
-  stats[0].users = await User.countDocuments();
-  stats[0].createdAt = new Date(Date.now());
+let statsDoc;
 
-  await stats[0].save();
+if (stats.length === 0) {
+    
+    statsDoc = await Stats.create({
+        subscription: 0,
+        users: 0,
+        createdAt: new Date()
+    });
+} else {
+    statsDoc = stats[0];
+}
+
+statsDoc.subscription = subscription.length;
+statsDoc.users = await User.countDocuments();
+statsDoc.createdAt = new Date();
+
+await statsDoc.save();
 })
 
 
